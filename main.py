@@ -2,6 +2,8 @@ import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import tifffile
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
 # Menentukan jalur folder dataset
 dataset_path = os.path.join(os.getcwd(), 'dataset')  # Menggunakan jalur absolut
@@ -48,3 +50,16 @@ for images, labels in train_data:
     
     if len(resized_train_data) >= len(train_data):
         break
+
+# Melatih model pada data yang telah diproses
+model = Sequential()
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(24, 24, 1)))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Flatten())
+model.add(Dense(64, activation='relu'))
+model.add(Dense(len(class_names), activation='softmax'))
+
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.fit(resized_train_data[0][0], resized_train_data[0][1], epochs=10)
