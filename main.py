@@ -4,40 +4,32 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import tifffile
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+import numpy as np
 
-# Menentukan jalur folder dataset
-dataset_path = os.path.join(os.getcwd(), 'dataset')  # Menggunakan jalur absolut
-
-# Menentukan ukuran target yang diinginkan
+dataset_path = os.path.join(os.getcwd(), 'dataset')
 target_size = (24, 24)
-
-# Menentukan ukuran batch
 batch_size = 32
 
-# Fungsi untuk memuat gambar dengan ekstensi .tif dan mengubahnya menjadi array numpy
 def load_tiff_image(image_path, target_size):
     image = tifffile.imread(image_path)
-    image = tf.expand_dims(image, axis=-1)  # Menambahkan dimensi saluran pada gambar
+    image = tf.expand_dims(image, axis=-1)
     image_resized = tf.image.resize(image, target_size)
     image_array = tf.keras.preprocessing.image.img_to_array(image_resized)
     return image_array
 
-# Membuat objek ImageDataGenerator untuk melakukan augmentasi atau pemrosesan tambahan
-datagen = ImageDataGenerator(rescale=1./255)  # Contoh augmentasi: normalisasi skala piksel
+datagen = ImageDataGenerator(rescale=1./255)
 
-# Mendapatkan daftar nama kelas
 class_names = sorted(os.listdir(dataset_path))
 
-# Memuat data pelatihan dari folder 'dataset' menggunakan objek ImageDataGenerator
 train_data = datagen.flow_from_directory(
     dataset_path,
     target_size=target_size,
+    color_mode='grayscale',
     batch_size=batch_size,
     classes=class_names,
     shuffle=True
 )
 
-# Lakukan pra-pemrosesan dan ubah ukuran gambar menjadi 24x24 pixel
 resized_train_data = []
 for images, labels in train_data:
     resized_images = []
@@ -51,7 +43,6 @@ for images, labels in train_data:
     if len(resized_train_data) >= len(train_data):
         break
 
-# Melatih model pada data yang telah diproses
 model = Sequential()
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(24, 24, 1)))
 model.add(MaxPooling2D((2, 2)))
